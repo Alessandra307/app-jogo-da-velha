@@ -1,38 +1,130 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="myapp">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <title>myapp</title>
-  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo da Velha</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .cell.taken {
+      pointer-events: none;
+    }
+    .winner {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    .reset {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .reset:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <h1>Jogo da Velha</h1>
+  <div class="board" id="board"></div>
+  <div class="winner" id="winner"></div>
+  <button class="reset" id="reset">Reiniciar Jogo</button>
+
+  <script>
+    const board = document.getElementById('board');
+    const winnerDiv = document.getElementById('winner');
+    const resetButton = document.getElementById('reset');
+
+    let cells = Array(9).fill(null);
+    let isXNext = true;
+
+    function checkWinner() {
+      const winningCombinations = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+        [0, 4, 8], [2, 4, 6]             // Diagonals
+      ];
+
+      for (const combination of winningCombinations) {
+        const [a, b, c] = combination;
+        if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
+          return cells[a];
+        }
+      }
+
+      if (!cells.includes(null)) {
+        return 'Empate';
+      }
+
+      return null;
+    }
+
+    function handleClick(index) {
+      if (cells[index] || checkWinner()) return;
+
+      cells[index] = isXNext ? 'X' : 'O';
+      isXNext = !isXNext;
+      render();
+
+      const winner = checkWinner();
+      if (winner) {
+        winnerDiv.textContent = winner === 'Empate' ? 'Empate!' : `Jogador ${winner} venceu!`;
+      }
+    }
+
+    function render() {
+      board.innerHTML = '';
+      cells.forEach((cell, index) => {
+        const cellDiv = document.createElement('div');
+        cellDiv.classList.add('cell');
+        if (cell) {
+          cellDiv.textContent = cell;
+          cellDiv.classList.add('taken');
+        }
+        cellDiv.addEventListener('click', () => handleClick(index));
+        board.appendChild(cellDiv);
+      });
+    }
+
+    function resetGame() {
+      cells = Array(9).fill(null);
+      isXNext = true;
+      winnerDiv.textContent = '';
+      render();
+    }
+
+    resetButton.addEventListener('click', resetGame);
+
+    render();
+  </script>
 </body>
 </html>
+
